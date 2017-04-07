@@ -19,6 +19,8 @@
 @property(nonatomic,strong)UIImageView  *imageView;
 @property(nonatomic,strong)NSMutableArray *numberArray;
 @property(nonatomic,strong)NSMutableArray *vectorArray;
+@property(nonatomic,assign)CGSize   scaleSize;
+
 @end
 
 @implementation SysFilterController
@@ -31,11 +33,18 @@ static  int number = 1;
     self.title = self.filterName;
     [self.view addSubview:self.imageView];
     
-    [self handleImg];
+    if (number>=5) {
+        number = 1;
+    }else{
+        number++;
+    }
+    sourceImage = [UIImage imageNamed:[NSString stringWithFormat:@"img%d.jpg",number]];
+    
+    [self handleImg:sourceImage];
     
 }
 
--(void)handleImg{
+-(void)handleImg:(UIImage*)imgSource{
     
     currentFilter = [CIFilter filterWithName:_filterName];
     NSDictionary *attributes = currentFilter.attributes;
@@ -45,7 +54,9 @@ static  int number = 1;
         NSString *key = currentFilter.inputKeys[i];
         id objc = [currentFilter.attributes valueForKey:key];
         if ([objc isKindOfClass:[NSDictionary class]]) {
-            if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([NSNumber class])]) {
+            if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([CIImage class])]){
+                
+            }else if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([NSNumber class])]) {
                UILabel *lable = [[UILabel alloc] init];
                 lable.numberOfLines = 2;
                 lable.frame = CGRectMake(5,CGRectGetMaxY(self.imageView.frame)+25*i-20, 100, 24);
@@ -136,9 +147,56 @@ static  int number = 1;
                 
             }else if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([CIVector class])]){
                 
+                if ([objc[kCIAttributeType] isEqualToString:kCIAttributeTypePosition]) {
+                    CIVector *vector = objc[kCIAttributeDefault];
+                    CGFloat xScale = _imageView.frame.size.width/imgSource.size.width;
+                    CGFloat yScale =_imageView.frame.size.height/imgSource.size.height;
+                    NSInteger maxValue = imgSource.size.width>imgSource.size.height?imgSource.size.width:imgSource.size.height;
+                    NSInteger minValue = imgSource.size.width<imgSource.size.height?imgSource.size.width:imgSource.size.height;
+                    //获取偏移量
+                   CGFloat xOffset = maxValue%(NSInteger)_imageView.frame.size.width;
+                   CGFloat yOffset = minValue%(NSInteger)_imageView.frame.size.height;
+                    //视图view的center,判断image的方向
+                    CGPoint point = CGPointZero;
+                    if (imgSource.imageOrientation == UIImageOrientationUp) {
+                        
+                        point = CGPointMake(vector.X*xScale+0.5*xOffset, _imageView.frame.size.height - vector.Y*yScale-0.5*yOffset);
+                    }else if (imgSource.imageOrientation == UIImageOrientationRight){
+                        
+                        point = CGPointMake(vector.X*xScale+0.5*xOffset, vector.Y*yScale+0.5*yOffset);
+                    }else{
+                        
+                    }
+                    
+                    _scaleSize = CGSizeMake(xScale, yScale);
+                    UIView *view = [[UIView alloc] initWithFrame:CGRectMake( 0, 0, 50, 50)];
+                    view.center = point;
+                    view.tag = 1800+i;
+                    view.layer.borderColor = [[UIColor yellowColor] CGColor];
+                    view.layer.borderWidth = 1.0;
+                    [self.imageView addSubview:view];
+                    
+                }else{
+                    CIVector *vector = objc[kCIAttributeDefault];
+                    if (vector.count == 4) {
+                        
+                    }else if (vector.count > 4){
+                        
+                    }else{
+                        
+                    }
+                    message = [message stringByAppendingString:[NSString stringWithFormat:@"%@ = %@\n",key,objc]];
+                }
+                
+            }else if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([NSValue class])]){
+                //NSValue
                 message = [message stringByAppendingString:[NSString stringWithFormat:@"%@ = %@\n",key,objc]];
                 
             }else if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([NSData class])]){
+                
+                message = [message stringByAppendingString:[NSString stringWithFormat:@"%@ = %@\n",key,objc]];
+            }else{
+                
                 message = [message stringByAppendingString:[NSString stringWithFormat:@"%@ = %@\n",key,objc]];
             }
         }
@@ -148,12 +206,7 @@ static  int number = 1;
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"这些参数需要单独处理" message:message delegate:nil cancelButtonTitle:nil otherButtonTitles:@"ok", nil];
         [alert show];
     }
-    if (number>=5) {
-        number = 1;
-    }else{
-        number++;
-    }
-    sourceImage = [UIImage imageNamed:[NSString stringWithFormat:@"img%d.jpg",number]];
+    
     [self singleFilter:currentFilter sourceImage:sourceImage];
     
 }
@@ -191,10 +244,11 @@ static  int number = 1;
             id objc = [sysFilter.attributes valueForKey:key];
             if ([objc isKindOfClass:[NSDictionary class]]) {
                 if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([CIImage class])]) {
-                    
+                    //CIImage 设置
                     [sysFilter setValue: myCIImage forKey: key];
                     
                 }else if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([NSNumber class])]){
+                    //NSNumber 设置
                     UISlider *slider = [self.view viewWithTag:1000+i];
                     UILabel *showLabel = [self.view viewWithTag:100+i];
                     dispatch_async(dispatch_get_main_queue(), ^{
@@ -205,10 +259,29 @@ static  int number = 1;
                     [sysFilter setValue:[NSNumber numberWithFloat:slider.value]  forKey: key];
                     
                 }else if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([CIVector class])]){
-                    [sysFilter setValue:[objc valueForKey:kCIAttributeDefault]  forKey: key];
+                    //CIVector的设置
+                    if ([objc[kCIAttributeType] isEqualToString:kCIAttributeTypePosition]) {
+                        UIView *view = [self.imageView viewWithTag:1800+i];
+                        CGPoint point = view.center;
+                        //判断image方向
+                        CIVector *vector=nil;
+                        if (source.imageOrientation == UIImageOrientationUp) {
+                            vector = [CIVector vectorWithCGPoint:CGPointMake(point.x/_scaleSize.width, (_imageView.frame.size.height-point.y)/_scaleSize.height)];
+                        }else if (source.imageOrientation == UIImageOrientationRight){
+                            vector = [CIVector vectorWithCGPoint:CGPointMake(point.x/_scaleSize.width,point.y/_scaleSize.height)];
+                        }
+                        
+                        if (vector) {
+                            [sysFilter setValue:vector forKey: key];
+                        }
+                        
+                        
+                    }else{
+                        [sysFilter setValue:[objc valueForKey:kCIAttributeDefault]  forKey: key];
+                    }
                     
                 }else if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([CIColor class])]){
-                    
+                    //CIColor 设置
                     UILabel *showLabel = [self.view viewWithTag:100+i];
                     
                     UISlider *sliderR = [self.view viewWithTag:1100+i];
@@ -227,6 +300,13 @@ static  int number = 1;
                     });
                     
                     [sysFilter setValue:cicolor  forKey: key];
+                }else if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([NSValue class])]){
+                    //NSValue 设置
+                    [sysFilter setValue:[objc valueForKey:kCIAttributeDefault]  forKey: key];
+                    
+                }else{
+                    
+                    [sysFilter setValue:[objc valueForKey:kCIAttributeDefault]  forKey: key];
                 }
             }
             
@@ -346,14 +426,6 @@ static  int number = 1;
     // Dispose of any resources that can be recreated.
 }
 
-/*
-#pragma mark - Navigation
 
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 @end

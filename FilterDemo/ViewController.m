@@ -80,7 +80,7 @@
 
 #pragma mark--UITableViewDelegate
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
-    return self.filterCategorys.count;
+    return self.filterCategorys.count+1;
 }
 
 -(UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
@@ -89,16 +89,28 @@
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@"cell"];
         cell.detailTextLabel.textColor = [UIColor lightGrayColor];
     }
-    NSDictionary *cellDic = self.filterCategorys[indexPath.row];
-    cell.textLabel.text = cellDic[@"title"];
-    cell.detailTextLabel.text = cellDic[@"subTitle"];
+    if (indexPath.row == self.filterCategorys.count) {
+        cell.textLabel.text = @"复合滤镜";
+        cell.detailTextLabel.text = nil;
+    }else{
+        NSDictionary *cellDic = self.filterCategorys[indexPath.row];
+        cell.textLabel.text = cellDic[@"title"];
+        cell.detailTextLabel.text = cellDic[@"subTitle"];
+    }
+    
     return cell;
 }
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
-    id vc = [[NSClassFromString(@"FilterCategoryController") alloc] init];
-    NSDictionary *cellDic = self.filterCategorys[indexPath.row];
-    [vc setValue:cellDic[@"title"] forKey:@"filterCategoryName"];
-    [self.navigationController pushViewController:vc animated:YES];
+    if (indexPath.row<self.filterCategorys.count) {
+        id vc = [[NSClassFromString(@"FilterCategoryController") alloc] init];
+        NSDictionary *cellDic = self.filterCategorys[indexPath.row];
+        [vc setValue:cellDic[@"title"] forKey:@"filterCategoryName"];
+        [self.navigationController pushViewController:vc animated:YES];
+    }else{
+        id vc = [[NSClassFromString(@"StackFilterNameController") alloc] init];
+        [self.navigationController pushViewController:vc animated:YES];
+    }
+    
 }
 #pragma mark --- line -----
 -(void)singleFilterTest{
