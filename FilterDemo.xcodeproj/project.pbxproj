@@ -112,6 +112,13 @@
 			path = image;
 			sourceTree = "<group>";
 		};
+		B69DBED21E9B885600867507 /* CustomFilter */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = CustomFilter;
+			sourceTree = "<group>";
+		};
 		B6C71EB51E0BBE4B00FE4521 = {
 			isa = PBXGroup;
 			children = (
@@ -182,6 +189,7 @@
 		B6C71EF41E0BBEF400FE4521 /* FilterController */ = {
 			isa = PBXGroup;
 			children = (
+				B69DBED21E9B885600867507 /* CustomFilter */,
 				B69DBEC11E962CA900867507 /* image */,
 				B6C71EF61E0BBF2600FE4521 /* SysFilterController.h */,
 				B6C71EF71E0BBF2600FE4521 /* SysFilterController.m */,

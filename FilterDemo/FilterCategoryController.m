@@ -10,6 +10,7 @@
 
 @interface FilterCategoryController ()<UITableViewDelegate,UITableViewDataSource>
 @property(nonatomic,strong)NSArray  *filterNames;
+@property(nonatomic,strong)UITableView  *tableView;
 @end
 
 @implementation FilterCategoryController
@@ -17,19 +18,42 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+    
+    UIButton *switchBtn = [UIButton buttonWithType:UIButtonTypeSystem];
+    switchBtn.bounds = CGRectMake(0, 0, 60, 40);
+    [switchBtn setTitle:@"全部" forState:UIControlStateNormal];
+    [switchBtn addTarget:self action:@selector(transformBtnAction:) forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:switchBtn];
+    
     self.title = self.filterCategoryName;
     self.filterNames = [CIFilter filterNamesInCategory:self.filterCategoryName];
     [self showTableView];
 }
+
+-(void)transformBtnAction:(UIButton*)sender{
+    sender.selected = !sender.selected;
+    if (sender.selected) {
+        [sender setTitle:@"分类" forState:UIControlStateSelected];
+        self.title = @"全部滤镜";
+        self.filterNames = [CIFilter filterNamesInCategory:kCICategoryBuiltIn];
+    }else{
+       [sender setTitle:@"全部" forState:UIControlStateNormal];
+       self.title = self.filterCategoryName;
+       self.filterNames = [CIFilter filterNamesInCategory:self.filterCategoryName];
+    }
+    
+    [self.tableView reloadData];
+}
+
 -(void)showTableView{
-    UITableView *tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
-    tableView.translatesAutoresizingMaskIntoConstraints = NO;
-    tableView.delegate = self;
-    tableView.dataSource = self;
-    [tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"cell"];
-    [self.view addSubview:tableView];
-    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"|[tableView]|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(tableView)]];
-    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[tableView]-|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(tableView)]];
+    _tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
+    _tableView.translatesAutoresizingMaskIntoConstraints = NO;
+    _tableView.delegate = self;
+    _tableView.dataSource = self;
+    [_tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"cell"];
+    [self.view addSubview:_tableView];
+    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"|[_tableView]|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(_tableView)]];
+    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[_tableView]-|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(_tableView)]];
     
 }
 
@@ -40,7 +64,7 @@
 
 -(UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell"];
-    cell.textLabel.text = self.filterNames[indexPath.row];
+    cell.textLabel.text = [NSString stringWithFormat:@"%ld-%@",indexPath.row,self.filterNames[indexPath.row]];
     return cell;
 }
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{

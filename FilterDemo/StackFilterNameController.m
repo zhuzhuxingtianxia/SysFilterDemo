@@ -39,13 +39,20 @@
 
 -(UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell"];
-    cell.textLabel.text = self.filterNames[indexPath.row];
+    cell.textLabel.text = self.filterNames[indexPath.row][@"title"];
     return cell;
 }
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     id vc = [[NSClassFromString(@"StackFilterController") alloc] init];
     [vc setValue:@YES forKey:@"isEAGL"];
     [self.navigationController pushViewController:vc animated:YES];
+}
+
+-(NSArray*)filterNames{
+    if (!_filterNames) {
+        _filterNames = @[@{@"title":@"抠图"},@{@"title":@"美白"},@{@"title":@"美颜"},@{@"title":@"图片合并"},@{@"title":@"图片添加文字"},@{@"title":@"终极PS"},];
+    }
+    return _filterNames;
 }
 
 - (void)didReceiveMemoryWarning {

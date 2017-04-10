@@ -9,13 +9,18 @@
 #import "SysFilterController.h"
 #define kScreenWidth [[UIScreen mainScreen] bounds].size.width
 #define kScreenHeight [[UIScreen mainScreen] bounds].size.height
-@interface SysFilterController ()
+
+inline static void k_alertView(NSString *title,NSString *message){
+     [[[UIAlertView alloc] initWithTitle:title message:message delegate:nil cancelButtonTitle:nil otherButtonTitles:@"确定", nil] show];
+}
+
+@interface SysFilterController ()<UIImagePickerControllerDelegate,UINavigationControllerDelegate>
 {
    CIContext *myContext;
    CIFilter *currentFilter;
     UIImage *sourceImage;
 }
-
+@property(nonatomic,strong)UIImagePickerController * imagePickerVC;
 @property(nonatomic,strong)UIImageView  *imageView;
 @property(nonatomic,strong)NSMutableArray *numberArray;
 @property(nonatomic,strong)NSMutableArray *vectorArray;
@@ -30,6 +35,17 @@ static  int number = 1;
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     self.view.backgroundColor = [UIColor whiteColor];
+    
+    currentFilter = [CIFilter filterWithName:_filterName];
+    NSDictionary *attributes = currentFilter.attributes;
+    NSLog(@"attributes == %@", attributes);
+    
+    UIButton *photoBtn = [UIButton buttonWithType:UIButtonTypeSystem];
+    photoBtn.bounds = CGRectMake(0, 0, 60, 40);
+    [photoBtn setTitle:@"相册" forState:UIControlStateNormal];
+    [photoBtn addTarget:self action:@selector(photoBtnAction:) forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:photoBtn];
+    
     self.title = self.filterName;
     [self.view addSubview:self.imageView];
     
@@ -46,9 +62,6 @@ static  int number = 1;
 
 -(void)handleImg:(UIImage*)imgSource{
     
-    currentFilter = [CIFilter filterWithName:_filterName];
-    NSDictionary *attributes = currentFilter.attributes;
-    NSLog(@"attributes == %@", attributes);
     NSString *message = @"";
     for (NSInteger i=0 ; i < currentFilter.inputKeys.count ; i++){
         NSString *key = currentFilter.inputKeys[i];
@@ -57,19 +70,25 @@ static  int number = 1;
             if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([CIImage class])]){
                 
             }else if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([NSNumber class])]) {
-               UILabel *lable = [[UILabel alloc] init];
-                lable.numberOfLines = 2;
-                lable.frame = CGRectMake(5,CGRectGetMaxY(self.imageView.frame)+25*i-20, 100, 24);
-                lable.tag = 100+i;
-                lable.font = [UIFont systemFontOfSize:10];
-                lable.textAlignment = NSTextAlignmentCenter;
+                UILabel *lable = [self.view viewWithTag:100+i];
+                if (!lable) {
+                    lable = [[UILabel alloc] init];
+                    lable.numberOfLines = 2;
+                    lable.frame = CGRectMake(5,CGRectGetMaxY(self.imageView.frame)+25*i-20, 100, 24);
+                    lable.tag = 100+i;
+                    lable.font = [UIFont systemFontOfSize:10];
+                    lable.textAlignment = NSTextAlignmentCenter;
+                }
                 lable.text = [NSString stringWithFormat:@"%@:%@",key,[objc objectForKey:kCIAttributeDefault]];
                 [self.view addSubview:lable];
                 
-               UISlider *slider = [[UISlider alloc] init];
-                slider.frame = CGRectMake(CGRectGetMaxX(lable.frame)+5, CGRectGetMaxY(self.imageView.frame)+25*i-20,kScreenWidth - 120 , 20);
-                slider.tag = 1000+i;
-                slider.continuous = YES;
+                UISlider *slider = [self.view viewWithTag:1000+i];
+                if (!slider) {
+                    slider = [[UISlider alloc] init];
+                    slider.frame = CGRectMake(CGRectGetMaxX(lable.frame)+5, CGRectGetMaxY(self.imageView.frame)+25*i-20,kScreenWidth - 120 , 20);
+                    slider.tag = 1000+i;
+                    slider.continuous = YES;
+                }
                 //最小值
                 slider.minimumValue = [objc objectForKey:kCIAttributeSliderMin]?[[objc objectForKey:kCIAttributeSliderMin] floatValue]:0;
                 //最大值
@@ -79,12 +98,17 @@ static  int number = 1;
                 [slider addTarget:self action:@selector(changeSlider:) forControlEvents:UIControlEventValueChanged];
                 [self.view addSubview:slider];
             }else if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([CIColor class])]){
-                UILabel *lable = [[UILabel alloc] init];
-                lable.frame = CGRectMake(5,CGRectGetMaxY(self.imageView.frame)+25*i-20, 100, 24);
-                lable.numberOfLines = 2;
-                lable.tag = 100+i;
-                lable.font = [UIFont systemFontOfSize:10];
-                lable.textAlignment = NSTextAlignmentCenter;
+                
+                UILabel *lable = [self.view viewWithTag:100+i];
+                if (!lable) {
+                    lable = [[UILabel alloc] init];
+                    lable.numberOfLines = 2;
+                    lable.frame = CGRectMake(5,CGRectGetMaxY(self.imageView.frame)+25*i-20, 100, 24);
+                    lable.tag = 100+i;
+                    lable.font = [UIFont systemFontOfSize:10];
+                    lable.textAlignment = NSTextAlignmentCenter;
+                }
+                
                 lable.text = [NSString stringWithFormat:@"%@:%@",key,[objc objectForKey:kCIAttributeDefault]];
                 [self.view addSubview:lable];
                 
@@ -92,10 +116,13 @@ static  int number = 1;
                 
                 CGFloat sliderW = (kScreenWidth - 120)/4.0;
                 
-                UISlider *sliderR = [[UISlider alloc] init];
-                sliderR.frame = CGRectMake(CGRectGetMaxX(lable.frame)+5, CGRectGetMaxY(self.imageView.frame)+25*i-20, sliderW, 20);
-                sliderR.tag = 1100+i;
-                sliderR.continuous = YES;
+                UISlider *sliderR = [self.view viewWithTag:1100+i];
+                if (!sliderR) {
+                    sliderR = [[UISlider alloc] init];
+                    sliderR.frame = CGRectMake(CGRectGetMaxX(lable.frame)+5, CGRectGetMaxY(self.imageView.frame)+25*i-20, sliderW, 20);
+                    sliderR.tag = 1100+i;
+                    sliderR.continuous = YES;
+                }
                 //最小值
                 sliderR.minimumValue = 0;
                 //最大值
@@ -105,10 +132,13 @@ static  int number = 1;
                 [sliderR addTarget:self action:@selector(changeSlider:) forControlEvents:UIControlEventValueChanged];
                 [self.view addSubview:sliderR];
                 
-                UISlider *sliderG = [[UISlider alloc] init];
-                sliderG.frame = CGRectMake(CGRectGetMaxX(sliderR.frame)+2, CGRectGetMaxY(self.imageView.frame)+25*i-20,sliderW , 20);
-                sliderG.tag = 1200+i;
-                sliderG.continuous = YES;
+                UISlider *sliderG = [self.view viewWithTag:1200+i];
+                if (!sliderG) {
+                    sliderG = [[UISlider alloc] init];
+                    sliderG.frame = CGRectMake(CGRectGetMaxX(sliderR.frame)+2, CGRectGetMaxY(self.imageView.frame)+25*i-20,sliderW , 20);
+                    sliderG.tag = 1200+i;
+                    sliderG.continuous = YES;
+                }
                 //最小值
                 sliderG.minimumValue = 0;
                 //最大值
@@ -118,10 +148,14 @@ static  int number = 1;
                 [sliderG addTarget:self action:@selector(changeSlider:) forControlEvents:UIControlEventValueChanged];
                 [self.view addSubview:sliderG];
                 
-                UISlider *sliderB = [[UISlider alloc] init];
-                sliderB.frame = CGRectMake(CGRectGetMaxX(sliderG.frame)+2, CGRectGetMaxY(self.imageView.frame)+25*i-20,sliderW, 20);
-                sliderB.tag = 1300+i;
-                sliderB.continuous = YES;
+                UISlider *sliderB = [self.view viewWithTag:1300+i];
+                if (!sliderB) {
+                    sliderB = [[UISlider alloc] init];
+                    sliderB.frame = CGRectMake(CGRectGetMaxX(sliderG.frame)+2, CGRectGetMaxY(self.imageView.frame)+25*i-20,sliderW, 20);
+                    sliderB.tag = 1300+i;
+                    sliderB.continuous = YES;
+                }
+                
                 //最小值
                 sliderB.minimumValue = 0;
                 //最大值
@@ -131,10 +165,14 @@ static  int number = 1;
                 [sliderB addTarget:self action:@selector(changeSlider:) forControlEvents:UIControlEventValueChanged];
                 [self.view addSubview:sliderB];
                 
-                UISlider *sliderA = [[UISlider alloc] init];
-                sliderA.frame = CGRectMake(CGRectGetMaxX(sliderB.frame)+2, CGRectGetMaxY(self.imageView.frame)+25*i-20,sliderW , 20);
-                sliderA.tag = 1400+i;
-                sliderA.continuous = YES;
+                UISlider *sliderA = [self.view viewWithTag:1400+i];
+                if (!sliderA) {
+                    sliderA = [[UISlider alloc] init];
+                    sliderA.frame = CGRectMake(CGRectGetMaxX(sliderB.frame)+2, CGRectGetMaxY(self.imageView.frame)+25*i-20,sliderW , 20);
+                    sliderA.tag = 1400+i;
+                    sliderA.continuous = YES;
+                }
+            
                 //最小值
                 sliderA.minimumValue = 0;
                 //最大值
@@ -158,23 +196,27 @@ static  int number = 1;
                    CGFloat yOffset = minValue%(NSInteger)_imageView.frame.size.height;
                     //视图view的center,判断image的方向
                     CGPoint point = CGPointZero;
+#warning  关于坐标还存在问题？
                     if (imgSource.imageOrientation == UIImageOrientationUp) {
                         
                         point = CGPointMake(vector.X*xScale+0.5*xOffset, _imageView.frame.size.height - vector.Y*yScale-0.5*yOffset);
                     }else if (imgSource.imageOrientation == UIImageOrientationRight){
-                        
-                        point = CGPointMake(vector.X*xScale+0.5*xOffset, vector.Y*yScale+0.5*yOffset);
+                        //右旋转90度 y^ = x,x^ = w-y
+                        point = CGPointMake(vector.Y*yScale+0.5*yOffset, _imageView.frame.size.height-vector.X*xScale-0.5*xOffset);
                     }else{
-                        
+                        k_alertView(nil,@"image方向需要修正");
                     }
                     
                     _scaleSize = CGSizeMake(xScale, yScale);
-                    UIView *view = [[UIView alloc] initWithFrame:CGRectMake( 0, 0, 50, 50)];
-                    view.center = point;
-                    view.tag = 1800+i;
-                    view.layer.borderColor = [[UIColor yellowColor] CGColor];
-                    view.layer.borderWidth = 1.0;
-                    [self.imageView addSubview:view];
+                    UIView *view = [self.imageView viewWithTag:1800+i];
+                    if (!view) {
+                        view = [[UIView alloc] initWithFrame:CGRectMake( 0, 0, 50, 50)];
+                        view.center = point;
+                        view.tag = 1800+i;
+                        view.layer.borderColor = [[UIColor yellowColor] CGColor];
+                        view.layer.borderWidth = 1.0;
+                        [self.imageView addSubview:view];
+                    }
                     
                 }else{
                     CIVector *vector = objc[kCIAttributeDefault];
@@ -261,6 +303,7 @@ static  int number = 1;
                 }else if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([CIVector class])]){
                     //CIVector的设置
                     if ([objc[kCIAttributeType] isEqualToString:kCIAttributeTypePosition]) {
+                        
                         UIView *view = [self.imageView viewWithTag:1800+i];
                         CGPoint point = view.center;
                         //判断image方向
@@ -268,7 +311,8 @@ static  int number = 1;
                         if (source.imageOrientation == UIImageOrientationUp) {
                             vector = [CIVector vectorWithCGPoint:CGPointMake(point.x/_scaleSize.width, (_imageView.frame.size.height-point.y)/_scaleSize.height)];
                         }else if (source.imageOrientation == UIImageOrientationRight){
-                            vector = [CIVector vectorWithCGPoint:CGPointMake(point.x/_scaleSize.width,point.y/_scaleSize.height)];
+                            //旋转90度
+                            vector = [CIVector vectorWithCGPoint:CGPointMake(point.y/_scaleSize.height,point.x/_scaleSize.width)];
                         }
                         
                         if (vector) {
@@ -330,13 +374,43 @@ static  int number = 1;
 
     
 }
+#pragma mark 相册代理
+-(void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info{
+    
+    //从相册中选取的照片
+    UIImage *img = [info objectForKey:UIImagePickerControllerOriginalImage];
+    sourceImage = img;
+    
+    [self dismissViewControllerAnimated:YES completion:^{
+      [self handleImg:sourceImage];
+    }];
+    
+   
+}
 
-
+#pragma mark -- 选择相册
+-(void)photoBtnAction:(UIButton*)sender{
+    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary]){
+        [self presentViewController:self.imagePickerVC animated:YES completion:nil];
+    }else{
+        k_alertView(nil, @"相册不可用");
+    }
+    
+}
+#pragma mark -- getter
+-(UIImagePickerController *)imagePickerVC{
+    if(!_imagePickerVC){
+        _imagePickerVC = [[UIImagePickerController alloc]init];
+        _imagePickerVC.delegate=self;
+        [_imagePickerVC setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
+    }
+    return _imagePickerVC;
+}
 -(UIImageView*)imageView{
     if (!_imageView) {
         _imageView = [[UIImageView alloc] init];
         _imageView.frame = CGRectMake(0, 64, kScreenWidth, kScreenWidth);
-        _imageView.backgroundColor = [UIColor clearColor];
+        _imageView.backgroundColor = [UIColor groupTableViewBackgroundColor];
         _imageView.contentMode = UIViewContentModeScaleAspectFit;
     }
     return _imageView;
