@@ -364,7 +364,14 @@ static  int number = 1;
         CIImage *resultImage = sysFilter.outputImage;
         //渲染
          dispatch_async(dispatch_get_main_queue(), ^{
-             CGImageRef cgimage = [myContext createCGImage:resultImage fromRect:CGRectMake(0, 0, source.size.width, source.size.height)];
+             //图片修正
+             CGRect rect;
+             if (source.imageOrientation == UIImageOrientationRight) {
+                 rect = CGRectMake(0, 0, source.size.height, source.size.width);
+             }else{
+                 rect = CGRectMake(0, 0, source.size.width, source.size.height);
+             }
+             CGImageRef cgimage = [myContext createCGImage:resultImage fromRect:rect];
              
              self.imageView.image = [UIImage imageWithCGImage:cgimage scale:1.0 orientation:source.imageOrientation];
              CGImageRelease(cgimage);

@@ -54,8 +54,9 @@
         }
         self.pickerView.hidden = NO;
         self.imageView.hidden = NO;
-        self.orgImage = [UIImage imageNamed:[NSString stringWithFormat:@"img%d.jpg",2+1]];
+        self.orgImage = [UIImage imageNamed:[NSString stringWithFormat:@"img%d.jpg",arc4random()%5+1]];
         self.imageView.image = self.orgImage;
+        [self.pickerView selectRow:0 inComponent:0 animated:YES];
     }else{
         self.pickerView.hidden = YES;
         self.imageView.hidden = YES;
@@ -141,9 +142,16 @@
                  forKey: @"inputAngle"];
     //图像输出
     CIImage *resultImage = [hueAdjust valueForKey: @"outputImage"];
+    //图片修正
+    CGRect rect;
+    if (self.orgImage.imageOrientation == UIImageOrientationRight) {
+        rect = CGRectMake(0, 0,self.orgImage.size.height , self.orgImage.size.width);
+    }else{
+        rect = CGRectMake(0, 0,self.orgImage.size.width , self.orgImage.size.height);
+    }
     //渲染
-    CGImageRef cgimage = [myContext createCGImage:resultImage fromRect:CGRectMake(0, 0, self.orgImage.size.width, self.orgImage.size.height)];
-    self.imageView.image = [UIImage imageWithCGImage:cgimage scale:1.0 orientation:UIImageOrientationRight];
+    CGImageRef cgimage = [myContext createCGImage:resultImage fromRect:rect];
+    self.imageView.image = [UIImage imageWithCGImage:cgimage scale:1.0 orientation:self.orgImage.imageOrientation];
     
 }
 
@@ -197,8 +205,14 @@
                                       keysAndValues:kCIInputImageKey, ciImage, nil];
         
          CIContext *context = [CIContext contextWithOptions:nil];
+        CGRect rect;
+        if (self.orgImage.imageOrientation == UIImageOrientationRight) {
+            rect = CGRectMake(0, 0,self.orgImage.size.height , self.orgImage.size.width);
+        }else{
+           rect = CGRectMake(0, 0,self.orgImage.size.width , self.orgImage.size.height);
+        }
          CGImageRef cgImage = [context createCGImage:filter.outputImage
-         fromRect:CGRectMake(0, 0, self.orgImage.size.width, self.orgImage.size.height)];
+         fromRect:rect];
         UIImage *newImg = [UIImage imageWithCGImage:cgImage scale:1.0 orientation:self.orgImage.imageOrientation];
         
         //处理赋值
