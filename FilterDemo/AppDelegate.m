@@ -7,7 +7,7 @@
 //
 
 #import "AppDelegate.h"
-
+#import "NdUncaughtExceptionHandler.h"
 @interface AppDelegate ()
 
 @end
@@ -17,6 +17,29 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    
+    //设置崩溃异常报告
+    [NdUncaughtExceptionHandler setDefaultHandler];
+    
+    NSNumber *isException =  [[NSUserDefaults standardUserDefaults] objectForKey:@"isExceptionHappen"];
+    
+    if([isException integerValue] == 1){
+        
+        NSString *strPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0] stringByAppendingPathComponent:@"Exception.txt"];
+        
+        NSError *error = nil;
+        NSString *cursh = [NSString stringWithContentsOfFile:strPath encoding:NSUTF8StringEncoding error:&error];
+#ifdef DEBUG
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:cursh delegate:nil cancelButtonTitle:nil otherButtonTitles:@"确定", nil];
+        [alert show];
+#else
+#endif
+
+        [[NSUserDefaults standardUserDefaults] setValue:@0 forKey:@"isExceptionHappen"];
+    }
+    /*-----------------------------------------*/
+
+    
     return YES;
 }
 

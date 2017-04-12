@@ -278,6 +278,7 @@ static  int number = 1;
             
         }
         
+    //@autoreleasepool {
         //CIImage配方对象
         CIImage *myCIImage = [CIImage imageWithCGImage:source.CGImage];
         //设置滤镜
@@ -355,13 +356,13 @@ static  int number = 1;
             }
             
         }
-        /*
-         [sysFilter setValue: myCIImage forKey: @"inputImage"];
-         [sysFilter setValue: [NSNumber numberWithFloat: 2.09] forKey: @"inputAngle"];
-         */
+            /*
+             [sysFilter setValue: myCIImage forKey: @"inputImage"];
+             [sysFilter setValue: [NSNumber numberWithFloat: 2.09] forKey: @"inputAngle"];
+             */
         
-        //图像输出
-        CIImage *resultImage = sysFilter.outputImage;
+        //图像输出。使用sysFilter.outputImage方式输出容易crash
+        CIImage *resultImage = [sysFilter valueForKey:kCIOutputImageKey];
         //渲染
          dispatch_async(dispatch_get_main_queue(), ^{
              //图片修正
@@ -376,6 +377,8 @@ static  int number = 1;
              self.imageView.image = [UIImage imageWithCGImage:cgimage scale:1.0 orientation:source.imageOrientation];
              CGImageRelease(cgimage);
          });
+        
+      //}//autorelease结束
 
     });
 

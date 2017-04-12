@@ -239,28 +239,33 @@
 
 -(NSArray*)filterCategorys{
     if (!_filterCategorys) {
-        _filterCategorys = @[
-  @{@"title":kCICategoryDistortionEffect,@"subTitle":@"扭曲效果，比如bump、旋转、hole"},
-  
-  @{@"title":kCICategoryGeometryAdjustment,@"subTitle":@"几何调整，比如仿射变换、平切、透视转换"},
-  @{@"title":kCICategoryCompositeOperation,@"subTitle":@"合并操作，比如源覆、最小化、源在顶source atop、色彩混合"},
-  @{@"title":kCICategoryHalftoneEffect,@"subTitle":@"半色调效果，比如screen、line screen、hatched"},
-  @{@"title":kCICategoryColorAdjustment,@"subTitle":@"色彩调整，比如伽马调整、白点调整、曝光"},
-  @{@"title":kCICategoryColorEffect,@"subTitle":@"色彩效果，比如色调调整、posterize"},
-  @{@"title":kCICategoryTransition,@"subTitle":@"图像间翻转，比如dissolve、disintegrate with mask、swipe"},
-  @{@"title":kCICategoryTileEffect,@"subTitle":@"瓦片效果，比如parallelogram、triangle"},
-  @{@"title":kCICategoryGenerator,@"subTitle":@"图像生成器，比如stripes、constant color、checkerboard"},
-  @{@"title":kCICategoryReduction,@"subTitle":@"削减"},
-  @{@"title":kCICategoryGradient,@"subTitle":@"渐变，比如轴向渐变、仿射渐变、高斯渐变"},
-  @{@"title":kCICategoryStylize,@"subTitle":@"风格化，比如像素化、水晶化"},
-  @{@"title":kCICategorySharpen,@"subTitle":@"锐化、发光"},
-  @{@"title":kCICategoryBlur,@"subTitle":@"模糊，比如高斯模糊、焦点模糊、运动模糊"},
-  @{@"title":kCICategoryVideo,@"subTitle":@"用于视频"},
-  @{@"title":kCICategoryStillImage,@"subTitle":@"用于静态图像"},
-  @{@"title":kCICategoryInterlaced,@"subTitle":@"用于交叉图像"},
-  @{@"title":kCICategoryNonSquarePixels,@"subTitle":@"非方形像素"},
-  @{@"title":kCICategoryHighDynamicRange,@"subTitle":@"高动态范围,用于HDR"},
-  @{@"title":kCICategoryFilterGenerator,@"subTitle":@"滤镜生成器"},];
+        NSMutableArray *array = [NSMutableArray array];
+        [array addObject:@{@"title":kCICategoryDistortionEffect,@"subTitle":@"扭曲效果，比如bump、旋转、hole"}];
+        [array addObject:@{@"title":kCICategoryGeometryAdjustment,@"subTitle":@"几何调整，比如仿射变换、平切、透视转换"}];
+        [array addObject:@{@"title":kCICategoryCompositeOperation,@"subTitle":@"合并操作，比如源覆、最小化、源在顶source atop、色彩混合"}];
+        [array addObject:@{@"title":kCICategoryHalftoneEffect,@"subTitle":@"半色调效果，比如screen、line screen、hatched"}];
+        [array addObject:@{@"title":kCICategoryColorAdjustment,@"subTitle":@"色彩调整，比如伽马调整、白点调整、曝光"}];
+        [array addObject:@{@"title":kCICategoryColorEffect,@"subTitle":@"色彩效果，比如色调调整、posterize"}];
+        [array addObject:@{@"title":kCICategoryTransition,@"subTitle":@"图像间翻转，比如dissolve、disintegrate with mask、swipe"}];
+        [array addObject:@{@"title":kCICategoryTileEffect,@"subTitle":@"瓦片效果，比如parallelogram、triangle"}];
+        [array addObject:@{@"title":kCICategoryGenerator,@"subTitle":@"图像生成器，比如stripes、constant color、checkerboard"}];
+        [array addObject:@{@"title":kCICategoryReduction,@"subTitle":@"削减"}];
+        [array addObject:@{@"title":kCICategoryGradient,@"subTitle":@"渐变，比如轴向渐变、仿射渐变、高斯渐变"}];
+        [array addObject:@{@"title":kCICategoryStylize,@"subTitle":@"风格化，比如像素化、水晶化"}];
+        [array addObject:@{@"title":kCICategorySharpen,@"subTitle":@"锐化、发光"}];
+        [array addObject:@{@"title":kCICategoryBlur,@"subTitle":@"模糊，比如高斯模糊、焦点模糊、运动模糊"}];
+        [array addObject:@{@"title":kCICategoryVideo,@"subTitle":@"用于视频"}];
+        [array addObject:@{@"title":kCICategoryStillImage,@"subTitle":@"用于静态图像"}];
+        [array addObject:@{@"title":kCICategoryInterlaced,@"subTitle":@"用于交叉图像"}];
+        [array addObject:@{@"title":kCICategoryNonSquarePixels,@"subTitle":@"非方形像素"}];
+        [array addObject:@{@"title":kCICategoryHighDynamicRange,@"subTitle":@"高动态范围,用于HDR"}];
+        
+        if ([[[UIDevice currentDevice]systemVersion]floatValue] >= 9.0){
+            [array addObject:@{@"title":kCICategoryFilterGenerator,@"subTitle":@"滤镜生成器"}];
+        }
+        
+        _filterCategorys = array;
+        
     }
     return _filterCategorys;
 }

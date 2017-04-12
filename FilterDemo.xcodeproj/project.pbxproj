@@ -15,6 +15,7 @@
 		B69DBECB1E962CA900867507 /* img5.jpg in Resources */ = {isa = PBXBuildFile; fileRef = B69DBEC61E962CA900867507 /* img5.jpg */; };
 		B69DBECE1E9649B900867507 /* StackFilterNameController.m in Sources */ = {isa = PBXBuildFile; fileRef = B69DBECD1E9649B900867507 /* StackFilterNameController.m */; };
 		B69DBED11E964A7800867507 /* StackFilterController.m in Sources */ = {isa = PBXBuildFile; fileRef = B69DBED01E964A7800867507 /* StackFilterController.m */; };
+		B69DBED61E9C681E00867507 /* NdUncaughtExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = B69DBED51E9C681E00867507 /* NdUncaughtExceptionHandler.m */; };
 		B6C71EC31E0BBE4B00FE4521 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B6C71EC21E0BBE4B00FE4521 /* main.m */; };
 		B6C71EC61E0BBE4B00FE4521 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = B6C71EC51E0BBE4B00FE4521 /* AppDelegate.m */; };
 		B6C71EC91E0BBE4B00FE4521 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B6C71EC81E0BBE4B00FE4521 /* ViewController.m */; };
@@ -55,6 +56,8 @@
 		B69DBECD1E9649B900867507 /* StackFilterNameController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StackFilterNameController.m; sourceTree = "<group>"; };
 		B69DBECF1E964A7800867507 /* StackFilterController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StackFilterController.h; sourceTree = "<group>"; };
 		B69DBED01E964A7800867507 /* StackFilterController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StackFilterController.m; sourceTree = "<group>"; };
+		B69DBED41E9C681E00867507 /* NdUncaughtExceptionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NdUncaughtExceptionHandler.h; sourceTree = "<group>"; };
+		B69DBED51E9C681E00867507 /* NdUncaughtExceptionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NdUncaughtExceptionHandler.m; sourceTree = "<group>"; };
 		B6C71EBE1E0BBE4B00FE4521 /* FilterDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FilterDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B6C71EC21E0BBE4B00FE4521 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		B6C71EC41E0BBE4B00FE4521 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -163,6 +166,8 @@
 		B6C71EC11E0BBE4B00FE4521 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				B69DBED41E9C681E00867507 /* NdUncaughtExceptionHandler.h */,
+				B69DBED51E9C681E00867507 /* NdUncaughtExceptionHandler.m */,
 				B6C71EC21E0BBE4B00FE4521 /* main.m */,
 			);
 			name = "Supporting Files";
@@ -342,6 +347,7 @@
 				B6C71EF81E0BBF2600FE4521 /* SysFilterController.m in Sources */,
 				B69DBED11E964A7800867507 /* StackFilterController.m in Sources */,
 				B6C71EC61E0BBE4B00FE4521 /* AppDelegate.m in Sources */,
+				B69DBED61E9C681E00867507 /* NdUncaughtExceptionHandler.m in Sources */,
 				B6C71EC31E0BBE4B00FE4521 /* main.m in Sources */,
 				B69DBEB81E94AECA00867507 /* FilterCategoryController.m in Sources */,
 			);
@@ -490,6 +496,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = FilterDemo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
