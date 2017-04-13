@@ -240,7 +240,7 @@
 -(NSArray*)filterCategorys{
     if (!_filterCategorys) {
         NSMutableArray *array = [NSMutableArray array];
-        [array addObject:@{@"title":kCICategoryDistortionEffect,@"subTitle":@"扭曲效果，比如bump、旋转、hole"}];
+        [array addObject:@{@"title":kCICategoryDistortionEffect,@"subTitle":@"扭曲效果，比如bump、hole"}];
         [array addObject:@{@"title":kCICategoryGeometryAdjustment,@"subTitle":@"几何调整，比如仿射变换、平切、透视转换"}];
         [array addObject:@{@"title":kCICategoryCompositeOperation,@"subTitle":@"合并操作，比如源覆、最小化、源在顶source atop、色彩混合"}];
         [array addObject:@{@"title":kCICategoryHalftoneEffect,@"subTitle":@"半色调效果，比如screen、line screen、hatched"}];

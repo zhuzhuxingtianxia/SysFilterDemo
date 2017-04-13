@@ -294,6 +294,13 @@ static  int number = 1;
                     //NSNumber 设置
                     UISlider *slider = [self.view viewWithTag:1000+i];
                     UILabel *showLabel = [self.view viewWithTag:100+i];
+                    if ([[objc valueForKey:kCIAttributeDisplayName] isEqualToString:@"CompactStyle"]) {
+                        if (slider.value>0.5) {
+                            slider.value = 1;
+                        }else{
+                            slider.value = 0;
+                        }
+                    }
                     dispatch_async(dispatch_get_main_queue(), ^{
                         showLabel.text = [NSString stringWithFormat:@"%@:%.2f",key,slider.value];
                         
@@ -349,6 +356,9 @@ static  int number = 1;
                     //NSValue 设置
                     [sysFilter setValue:[objc valueForKey:kCIAttributeDefault]  forKey: key];
                     
+                }else if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([NSData class])] &&[[objc valueForKey:kCIAttributeDisplayName] isEqualToString:@"Message"]){
+                    NSData *data = [@"这是一个data参数" dataUsingEncoding:NSUTF8StringEncoding];
+                    [sysFilter setValue:data  forKey: key];
                 }else{
                     
                     [sysFilter setValue:[objc valueForKey:kCIAttributeDefault]  forKey: key];
@@ -372,6 +382,13 @@ static  int number = 1;
              }else{
                  rect = CGRectMake(0, 0, source.size.width, source.size.height);
              }
+             
+             /*
+              有时候快速滑动会出现 
+              @"CIImage overreleased while already deallocating"
+              的提示。
+              */
+             
              CGImageRef cgimage = [myContext createCGImage:resultImage fromRect:rect];
              
              self.imageView.image = [UIImage imageWithCGImage:cgimage scale:1.0 orientation:source.imageOrientation];

@@ -4,7 +4,7 @@
 //
 //  Created by Jion on 2017/4/6.
 //  Copyright © 2017年 Youjuke. All rights reserved.
-//
+//https://www.raywenderlich.com/71151/image-processing-ios-part-2-core-graphics-core-image-gpuimage?utm_source=tuicool
 
 #import <UIKit/UIKit.h>
 typedef NS_ENUM(NSUInteger, StackFilterType) {

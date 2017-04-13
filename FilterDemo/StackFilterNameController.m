@@ -43,14 +43,20 @@
     return cell;
 }
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
-    id vc = [[NSClassFromString(@"StackFilterController") alloc] init];
-    [vc setValue:@YES forKey:@"isEAGL"];
-    [self.navigationController pushViewController:vc animated:YES];
+    if (indexPath.row == 0) {
+        id vc = [[NSClassFromString(@"StackFilterController") alloc] init];
+        [vc setValue:@YES forKey:@"isEAGL"];
+        [self.navigationController pushViewController:vc animated:YES];
+
+    }else if (indexPath.row == 1){
+        id vc = [[NSClassFromString(@"DigOutController") alloc] init];
+        [self.navigationController pushViewController:vc animated:YES];
+    }
 }
 
 -(NSArray*)filterNames{
     if (!_filterNames) {
-        _filterNames = @[@{@"title":@"抠图"},@{@"title":@"美白"},@{@"title":@"美颜"},@{@"title":@"图片合并"},@{@"title":@"图片添加文字"},@{@"title":@"终极PS"},];
+        _filterNames = @[@{@"title":@"像素点,CoreGraphics,CoreImage比较"},@{@"title":@"简单抠图"},@{@"title":@"美白"},@{@"title":@"美颜"},@{@"title":@"图片合并"},@{@"title":@"图片添加文字"},@{@"title":@"终极PS"},];
     }
     return _filterNames;
 }
