@@ -70,7 +70,12 @@
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     id vc = [[NSClassFromString(@"SysFilterController") alloc] init];
     [vc setValue:self.filterNames[indexPath.row] forKey:@"filterName"];
-    [vc setValue:@YES forKey:@"isEAGL"];
+    if([self.title containsString:@"Blur"]){
+        [vc setValue:@NO forKey:@"isEAGL"];
+    }else {
+        [vc setValue:@YES forKey:@"isEAGL"];
+    }
+    
     [self.navigationController pushViewController:vc animated:YES];
 }
 

@@ -55,8 +55,10 @@ static  int number = 1;
         number++;
     }
     sourceImage = [UIImage imageNamed:[NSString stringWithFormat:@"img%d.jpg",number]];
-    
-    [self handleImg:sourceImage];
+    self.imageView.image = sourceImage;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.4 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self handleImg:sourceImage];
+    });
     
 }
 
@@ -259,145 +261,146 @@ static  int number = 1;
 
 -(void)singleFilter:(CIFilter*)sysFilter sourceImage:(UIImage*)source{
     
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        if (_isEAGL) {
-            //支持实时的图像处理
-            if (!myContext) {
-                EAGLContext *gLContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
-                NSMutableDictionary *options = [[NSMutableDictionary alloc] init];
-                [options setObject: [NSNull null] forKey: kCIContextWorkingColorSpace];
-                myContext = [CIContext contextWithEAGLContext:gLContext options:options];
-            }
-            
-            
-        }else{
-            //一般的图像处理 kCIContextUseSoftwareRenderer YES在CPU渲染 NO在GPU渲染
-            if (!myContext) {
-                myContext = [CIContext contextWithOptions:@{kCIContextUseSoftwareRenderer:[NSNumber numberWithBool:NO]}];
-            }
-            
+    if (_isEAGL) {
+        //支持实时的图像处理
+        if (!myContext) {
+            EAGLContext *gLContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+            NSMutableDictionary *options = [[NSMutableDictionary alloc] init];
+            [options setObject: [NSNull null] forKey: kCIContextWorkingColorSpace];
+            myContext = [CIContext contextWithEAGLContext:gLContext options:options];
         }
         
-    //@autoreleasepool {
-        //CIImage配方对象
-        CIImage *myCIImage = [CIImage imageWithCGImage:source.CGImage];
-        //设置滤镜
-        for (NSInteger i=0 ; i < sysFilter.inputKeys.count ; i++) {
-            NSString *key = sysFilter.inputKeys[i];
-            id objc = [sysFilter.attributes valueForKey:key];
-            if ([objc isKindOfClass:[NSDictionary class]]) {
-                if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([CIImage class])]) {
-                    //CIImage 设置
-                    [sysFilter setValue: myCIImage forKey: key];
-                    
-                }else if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([NSNumber class])]){
-                    //NSNumber 设置
-                    UISlider *slider = [self.view viewWithTag:1000+i];
-                    UILabel *showLabel = [self.view viewWithTag:100+i];
-                    if ([[objc valueForKey:kCIAttributeDisplayName] isEqualToString:@"CompactStyle"]) {
-                        if (slider.value>0.5) {
-                            slider.value = 1;
-                        }else{
-                            slider.value = 0;
-                        }
-                    }
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        showLabel.text = [NSString stringWithFormat:@"%@:%.2f",key,slider.value];
-                        
-                    });
-                    
-                    [sysFilter setValue:[NSNumber numberWithFloat:slider.value]  forKey: key];
-                    
-                }else if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([CIVector class])]){
-                    //CIVector的设置
-                    if ([objc[kCIAttributeType] isEqualToString:kCIAttributeTypePosition]) {
-                        
-                        UIView *view = [self.imageView viewWithTag:1800+i];
-                        CGPoint point = view.center;
-                        //判断image方向
-                        CIVector *vector=nil;
-                        if (source.imageOrientation == UIImageOrientationUp) {
-                            vector = [CIVector vectorWithCGPoint:CGPointMake(point.x/_scaleSize.width, (_imageView.frame.size.height-point.y)/_scaleSize.height)];
-                        }else if (source.imageOrientation == UIImageOrientationRight){
-                            //旋转90度
-                            vector = [CIVector vectorWithCGPoint:CGPointMake(point.y/_scaleSize.height,point.x/_scaleSize.width)];
-                        }
-                        
-                        if (vector) {
-                            [sysFilter setValue:vector forKey: key];
-                        }
-                        
-                        
+        
+    }else{
+        //一般的图像处理 kCIContextUseSoftwareRenderer YES在CPU渲染 NO在GPU渲染
+        if (!myContext) {
+            myContext = [CIContext contextWithOptions:@{kCIContextUseSoftwareRenderer:[NSNumber numberWithBool:NO]}];
+        }
+        
+    }
+        
+    //CIImage配方对象
+    CIImage *myCIImage = [CIImage imageWithCGImage:source.CGImage];
+    //设置滤镜
+    for (NSInteger i=0 ; i < sysFilter.inputKeys.count ; i++) {
+        NSString *key = sysFilter.inputKeys[i];
+        id objc = [sysFilter.attributes valueForKey:key];
+        if ([objc isKindOfClass:[NSDictionary class]]) {
+            if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([CIImage class])]) {
+                //CIImage 设置
+                [sysFilter setValue: myCIImage forKey: key];
+                
+            }else if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([NSNumber class])]){
+                //NSNumber 设置
+                UISlider *slider = [self.view viewWithTag:1000+i];
+                
+                if ([[objc valueForKey:kCIAttributeDisplayName] isEqualToString:@"CompactStyle"]) {
+                    if (slider.value>0.5) {
+                        slider.value = 1;
                     }else{
-                        [sysFilter setValue:[objc valueForKey:kCIAttributeDefault]  forKey: key];
+                        slider.value = 0;
+                    }
+                }
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    UILabel *showLabel = [self.view viewWithTag:100+i];
+                    showLabel.text = [NSString stringWithFormat:@"%@:%.2f",key,slider.value];
+                    
+                });
+                
+                [sysFilter setValue:[NSNumber numberWithFloat:slider.value]  forKey: key];
+                
+            }else if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([CIVector class])]){
+                //CIVector的设置
+                if ([objc[kCIAttributeType] isEqualToString:kCIAttributeTypePosition]) {
+                    
+                    UIView *view = [self.imageView viewWithTag:1800+i];
+                    CGPoint point = view.center;
+                    //判断image方向
+                    CIVector *vector=nil;
+                    if (source.imageOrientation == UIImageOrientationUp) {
+                        vector = [CIVector vectorWithCGPoint:CGPointMake(point.x/_scaleSize.width, (_imageView.frame.size.height-point.y)/_scaleSize.height)];
+                    }else if (source.imageOrientation == UIImageOrientationRight){
+                        //旋转90度
+                        vector = [CIVector vectorWithCGPoint:CGPointMake(point.y/_scaleSize.height,point.x/_scaleSize.width)];
                     }
                     
-                }else if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([CIColor class])]){
-                    //CIColor 设置
-                    UILabel *showLabel = [self.view viewWithTag:100+i];
+                    if (vector) {
+                        [sysFilter setValue:vector forKey: key];
+                    }
                     
-                    UISlider *sliderR = [self.view viewWithTag:1100+i];
-                     UISlider *sliderG = [self.view viewWithTag:1200+i];
-                    UISlider *sliderB = [self.view viewWithTag:1300+i];
-                    UISlider *sliderA = [self.view viewWithTag:1400+i];
-                    CGFloat r = [[NSString stringWithFormat:@"%.2f",sliderR.value] floatValue];
-                    CGFloat g = [[NSString stringWithFormat:@"%.2f",sliderG.value] floatValue];
-                    CGFloat b = [[NSString stringWithFormat:@"%.2f",sliderB.value] floatValue];
-                    CGFloat a = [[NSString stringWithFormat:@"%.2f",sliderA.value] floatValue];
-                    CIColor *cicolor = [CIColor colorWithRed:r green:g blue:b alpha:a];
                     
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        showLabel.text = [NSString stringWithFormat:@"%@:%@",key,cicolor];
-                        
-                    });
-                    
-                    [sysFilter setValue:cicolor  forKey: key];
-                }else if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([NSValue class])]){
-                    //NSValue 设置
-                    [sysFilter setValue:[objc valueForKey:kCIAttributeDefault]  forKey: key];
-                    
-                }else if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([NSData class])] &&[[objc valueForKey:kCIAttributeDisplayName] isEqualToString:@"Message"]){
-                    NSData *data = [@"这是一个data参数" dataUsingEncoding:NSUTF8StringEncoding];
-                    [sysFilter setValue:data  forKey: key];
                 }else{
-                    
                     [sysFilter setValue:[objc valueForKey:kCIAttributeDefault]  forKey: key];
                 }
+                
+            }else if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([CIColor class])]){
+                //CIColor 设置
+                UILabel *showLabel = [self.view viewWithTag:100+i];
+                
+                UISlider *sliderR = [self.view viewWithTag:1100+i];
+                 UISlider *sliderG = [self.view viewWithTag:1200+i];
+                UISlider *sliderB = [self.view viewWithTag:1300+i];
+                UISlider *sliderA = [self.view viewWithTag:1400+i];
+                CGFloat r = [[NSString stringWithFormat:@"%.2f",sliderR.value] floatValue];
+                CGFloat g = [[NSString stringWithFormat:@"%.2f",sliderG.value] floatValue];
+                CGFloat b = [[NSString stringWithFormat:@"%.2f",sliderB.value] floatValue];
+                CGFloat a = [[NSString stringWithFormat:@"%.2f",sliderA.value] floatValue];
+                CIColor *cicolor = [CIColor colorWithRed:r green:g blue:b alpha:a];
+                
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    showLabel.text = [NSString stringWithFormat:@"%@:%@",key,cicolor];
+                    
+                });
+                
+                [sysFilter setValue:cicolor  forKey: key];
+            }else if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([NSValue class])]){
+                //NSValue 设置
+                [sysFilter setValue:[objc valueForKey:kCIAttributeDefault]  forKey: key];
+                
+            }else if ([[objc valueForKey:kCIAttributeClass] isEqualToString:NSStringFromClass([NSData class])] &&[[objc valueForKey:kCIAttributeDisplayName] isEqualToString:@"Message"]){
+                NSData *data = [@"这是一个data参数" dataUsingEncoding:NSUTF8StringEncoding];
+                [sysFilter setValue:data  forKey: key];
+            }else{
+                
+                [sysFilter setValue:[objc valueForKey:kCIAttributeDefault]  forKey: key];
             }
-            
         }
-            /*
-             [sysFilter setValue: myCIImage forKey: @"inputImage"];
-             [sysFilter setValue: [NSNumber numberWithFloat: 2.09] forKey: @"inputAngle"];
-             */
         
-        //图像输出。使用sysFilter.outputImage方式输出容易crash
-        CIImage *resultImage = [sysFilter valueForKey:kCIOutputImageKey];
+    }
+        /*
+         [sysFilter setValue: myCIImage forKey: @"inputImage"];
+         [sysFilter setValue: [NSNumber numberWithFloat: 2.09] forKey: @"inputAngle"];
+         */
+    
+    //图像输出。使用sysFilter.outputImage方式输出容易crash
+    CIImage *resultImage = [sysFilter valueForKey:kCIOutputImageKey];
+    
+//    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        //图片修正
+        CGRect rect;
+        if (source.imageOrientation == UIImageOrientationRight) {
+            rect = CGRectMake(0, 0, source.size.height, source.size.width);
+        }else{
+            rect = CGRectMake(0, 0, source.size.width, source.size.height);
+        }
+        
+        /*
+         有时候快速滑动会出现
+         @"CIImage overreleased while already deallocating"
+         的提示。
+         */
+        
+        CGImageRef cgimage = [myContext createCGImage:resultImage fromRect:rect];
+        UIImage *image = [UIImage imageWithCGImage:cgimage scale:1.0 orientation:source.imageOrientation];
+        CGImageRelease(cgimage);
+    
         //渲染
          dispatch_async(dispatch_get_main_queue(), ^{
-             //图片修正
-             CGRect rect;
-             if (source.imageOrientation == UIImageOrientationRight) {
-                 rect = CGRectMake(0, 0, source.size.height, source.size.width);
-             }else{
-                 rect = CGRectMake(0, 0, source.size.width, source.size.height);
-             }
              
-             /*
-              有时候快速滑动会出现 
-              @"CIImage overreleased while already deallocating"
-              的提示。
-              */
-             
-             CGImageRef cgimage = [myContext createCGImage:resultImage fromRect:rect];
-             
-             self.imageView.image = [UIImage imageWithCGImage:cgimage scale:1.0 orientation:source.imageOrientation];
-             CGImageRelease(cgimage);
+             self.imageView.image = image;
          });
         
-      //}//autorelease结束
-
-    });
+//    });
 
     
 }
@@ -528,5 +531,8 @@ static  int number = 1;
 }
 
 
+-(void)dealloc {
+    NSLog(@"dealloc");
+}
 
 @end
